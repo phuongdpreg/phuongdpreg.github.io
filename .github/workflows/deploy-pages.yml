@@ -35,6 +35,13 @@ jobs:
         run: |
           npm install
           npm run build
+          touch dist/.nojekyll
+          if grep -q '/src/main.js' dist/index.html; then
+            echo "Build did not bundle entry — dist/index.html still points at /src/main.js"
+            exit 1
+          fi
+
+      - uses: actions/configure-pages@v4
 
       - uses: actions/upload-pages-artifact@v3
         with:
