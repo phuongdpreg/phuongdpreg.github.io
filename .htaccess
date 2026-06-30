@@ -1,0 +1,7 @@
+# Laragon: serve bundled app from public/ after npm run build
+DirectoryIndex public/index.html
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^assets/(.*)$ public/assets/$1 [L]
+</IfModule>

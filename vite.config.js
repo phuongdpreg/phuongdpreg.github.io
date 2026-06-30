@@ -7,7 +7,8 @@ export default defineConfig({
     dedupe: ['vue', 'axios'],
   },
   build: {
-    outDir: 'dist',
+    outDir: 'public',
+    emptyOutDir: true,
     sourcemap: true,
   },
 })
