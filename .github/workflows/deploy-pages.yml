@@ -15,6 +15,8 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
+    # Secrets: Settings → Environments → github-pages → Environment secrets
+    environment: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -28,15 +30,15 @@ jobs:
           sed -i "s|VITE_APPHUB_CORE_URL=.*|VITE_APPHUB_CORE_URL=${{ secrets.VITE_APPHUB_CORE_URL }}|g" .env.production
           sed -i "s|VITE_APPHUB_PARENT_ORIGINS=.*|VITE_APPHUB_PARENT_ORIGINS=${{ secrets.VITE_APPHUB_PARENT_ORIGINS }}|g" .env.production
           if ! grep -qE '^VITE_APPHUB_BACKEND_URL=.+' .env.production; then
-            echo "::error::VITE_APPHUB_BACKEND_URL is empty. Add Repository secret: Settings → Secrets and variables → Actions → Repository secrets."
+            echo "::error::VITE_APPHUB_BACKEND_URL is empty. Add Environment secret: Settings → Environments → github-pages → Environment secrets (name must match exactly)."
             exit 1
           fi
           if ! grep -qE '^VITE_APPHUB_CORE_URL=.+' .env.production; then
-            echo "::error::VITE_APPHUB_CORE_URL is empty."
+            echo "::error::VITE_APPHUB_CORE_URL is empty. Add to Environment github-pages."
             exit 1
           fi
           if ! grep -qE '^VITE_APPHUB_PARENT_ORIGINS=.+' .env.production; then
-            echo "::error::VITE_APPHUB_PARENT_ORIGINS is empty."
+            echo "::error::VITE_APPHUB_PARENT_ORIGINS is empty. Add to Environment github-pages."
             exit 1
           fi
 
