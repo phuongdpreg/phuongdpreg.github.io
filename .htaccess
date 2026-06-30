@@ -1,4 +1,3 @@
-# Laragon: serve bundled app from public/ after npm run build
 DirectoryIndex public/index.html
 
 <IfModule mod_rewrite.c>

@@ -55,9 +55,10 @@ jobs:
             echo "Build did not bundle entry — public/index.html still points at /src/main.js"
             exit 1
           fi
+          BACKEND_URL=$(grep '^VITE_APPHUB_BACKEND_URL=' .env.production | cut -d= -f2-)
           JS_FILE=$(ls public/assets/index-*.js | head -1)
-          if grep -q 'VITE_APPHUB_BACKEND_URL' "$JS_FILE"; then
-            echo "::error::Backend URL was not inlined into the bundle."
+          if ! grep -qF "$BACKEND_URL" "$JS_FILE"; then
+            echo "::error::VITE_APPHUB_BACKEND_URL was not embedded in the build output."
             exit 1
           fi
 
