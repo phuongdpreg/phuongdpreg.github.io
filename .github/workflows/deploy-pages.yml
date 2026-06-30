@@ -15,8 +15,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    # Environment secrets only work when this name matches Settings → Environments
-    environment: github-pages
     steps:
       - uses: actions/checkout@v4
 
@@ -24,32 +22,40 @@ jobs:
         with:
           node-version: '24'
 
-      - name: Setup environment from secrets
+      - name: Inject secrets into .env.production
         run: |
-          cp .env.production .env
-          sed -i "s|VITE_APPHUB_BACKEND_URL=.*|VITE_APPHUB_BACKEND_URL=${{ secrets.VITE_APPHUB_BACKEND_URL }}|g" .env
-          sed -i "s|VITE_APPHUB_CORE_URL=.*|VITE_APPHUB_CORE_URL=${{ secrets.VITE_APPHUB_CORE_URL }}|g" .env
-          sed -i "s|VITE_APPHUB_PARENT_ORIGINS=.*|VITE_APPHUB_PARENT_ORIGINS=${{ secrets.VITE_APPHUB_PARENT_ORIGINS }}|g" .env
-          if ! grep -qE '^VITE_APPHUB_BACKEND_URL=.+' .env; then
-            echo "::error::VITE_APPHUB_BACKEND_URL is empty. Add it under Repository secrets OR Environment secrets for github-pages."
+          sed -i "s|VITE_APPHUB_BACKEND_URL=.*|VITE_APPHUB_BACKEND_URL=${{ secrets.VITE_APPHUB_BACKEND_URL }}|g" .env.production
+          sed -i "s|VITE_APPHUB_CORE_URL=.*|VITE_APPHUB_CORE_URL=${{ secrets.VITE_APPHUB_CORE_URL }}|g" .env.production
+          sed -i "s|VITE_APPHUB_PARENT_ORIGINS=.*|VITE_APPHUB_PARENT_ORIGINS=${{ secrets.VITE_APPHUB_PARENT_ORIGINS }}|g" .env.production
+          if ! grep -qE '^VITE_APPHUB_BACKEND_URL=.+' .env.production; then
+            echo "::error::VITE_APPHUB_BACKEND_URL is empty. Add Repository secret: Settings → Secrets and variables → Actions → Repository secrets."
             exit 1
           fi
-          if ! grep -qE '^VITE_APPHUB_CORE_URL=.+' .env; then
+          if ! grep -qE '^VITE_APPHUB_CORE_URL=.+' .env.production; then
             echo "::error::VITE_APPHUB_CORE_URL is empty."
             exit 1
           fi
-          if ! grep -qE '^VITE_APPHUB_PARENT_ORIGINS=.+' .env; then
+          if ! grep -qE '^VITE_APPHUB_PARENT_ORIGINS=.+' .env.production; then
             echo "::error::VITE_APPHUB_PARENT_ORIGINS is empty."
             exit 1
           fi
 
       - name: Install and build
+        env:
+          VITE_APPHUB_BACKEND_URL: ${{ secrets.VITE_APPHUB_BACKEND_URL }}
+          VITE_APPHUB_CORE_URL: ${{ secrets.VITE_APPHUB_CORE_URL }}
+          VITE_APPHUB_PARENT_ORIGINS: ${{ secrets.VITE_APPHUB_PARENT_ORIGINS }}
         run: |
           npm install
           npm run build
           touch public/.nojekyll
           if grep -q '/src/main.js' public/index.html; then
             echo "Build did not bundle entry — public/index.html still points at /src/main.js"
+            exit 1
+          fi
+          JS_FILE=$(ls public/assets/index-*.js | head -1)
+          if grep -q 'VITE_APPHUB_BACKEND_URL' "$JS_FILE"; then
+            echo "::error::Backend URL was not inlined into the bundle."
             exit 1
           fi
 
