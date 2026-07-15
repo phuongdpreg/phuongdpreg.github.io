@@ -205,6 +205,24 @@ npm run build
 
 Pin a version in `package.json` (e.g. `"^0.2.0"`) for reproducible CI builds.
 
+## Upstream sync (this deploy repo)
+
+This repo is based on **[kennofizet/apphub-host-starter](https://github.com/kennofizet/apphub-host-starter)** with GitHub Pages deploy additions (`.github/workflows/`, `.env.production`, `.htaccess`).
+
+```bash
+git remote add upstream https://github.com/kennofizet/apphub-host-starter.git   # once
+git fetch upstream main
+git merge upstream/main
+# resolve conflicts — keep deploy-specific files (.github/, .env.production, .htaccess)
+npm install @kennofizet/apphub-frontend@latest
+npm run build
+```
+
+| Remote | Repo |
+|--------|------|
+| `upstream` | [kennofizet/apphub-host-starter](https://github.com/kennofizet/apphub-host-starter) — starter source |
+| `origin` | `phuongdpreg/phuongdpreg.github.io` — GitHub Pages deploy |
+
 ## Project layout
 
 ```
